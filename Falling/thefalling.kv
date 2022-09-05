@@ -1,0 +1,45 @@
+#:import menu menu
+
+MainCanvas:
+
+#:set avatar_Size dp(15)
+#:set button_Size dp(75)
+
+<MainCanvas>:
+    menu_widget: menu_widget
+    right_button: right_button
+    left_button: left_button
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: 1000, 1000
+            source: '6505830.png'
+
+    canvas:
+        Color:
+            rgba: 0, 1, 0, 1
+        Rectangle:
+            id: my_player
+            pos: root.rec_x-avatar_Size/2, self.height/1.4
+            size: avatar_Size, avatar_Size
+
+    BoxLayout:
+        spacing: 40
+        padding: 10
+        size: root.width, 200
+        Button:
+            id: left_button
+            text: 'Left'
+            size: button_Size, button_Size
+            on_press: root.on_left_click()
+            opacity: .5
+        Button:
+            id: right_button
+            text: 'Right'
+            size: button_Size, button_Size
+            on_press: root.on_right_click()
+            opacity: .5
+    MenuWidget:
+        id: menu_widget
+
+
