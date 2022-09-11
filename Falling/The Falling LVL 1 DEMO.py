@@ -10,16 +10,13 @@ from kivy.uix.relativelayout import RelativeLayout
 
 Builder.load_file('menu.kv')
 
+
 # How to play the game: Click left and right to move along the 'x' axis to stop click button to move in the opposite
 # direction once, to go faster just repeatedly click the direction you want to go BUT there's a catch the faster
 # you are going the harder it is to stop so be carefull. you can teleport to the other side of the screen but only from
 # the right side to the left side
 
 # Objective: Dodge all incoming enemies until you reach the next level
-
-# Level layout: Lvl 1: Space invaders type mode Lvl 2: Platform runner type mode Lvl 3: undecided...
-
-# Goal: Make this game playable both on mobile and pc
 
 class Sprite():
     def __init__(self, x, y, size, color, vx, vy):
@@ -60,7 +57,6 @@ class Sprite():
         self.rect.pos = (self.x, self.y)
 
     def check_collision_circle(self, other):
-
         distance = (((self.x - other.x) ** 2) + ((self.y - other.y) ** 2)) ** 0.5
 
         # if distance < (self.size + other.size)/2:
@@ -72,20 +68,24 @@ class Sprite():
         return distance < (self.size + other.size) / 2
 
     def check_collision_rect(self, other):
-            # code `... and ...` gives `True` or `False`
-            # and it doesn't need `if ...: return True else: return False`
+        # code `... and ...` gives `True` or `False`
+        # and it doesn't need `if ...: return True else: return False`
 
         return ((other.x <= self.x + self.size) and
-            (self.x <= other.x + other.size) and
-            (other.y <= self.y + self.size) and
-            (self.y <= other.y + other.size))
+                (self.x <= other.x + other.size) and
+                (other.y <= self.y + self.size) and
+                (self.y <= other.y + other.size))
+
 
 class MainCanvas(Widget):
-
     rec_x = NumericProperty(0)
     inc = dp(3)
     ball_size = dp(35)
     my_player = ObjectProperty(Rectangle)
+
+    count = 0
+    score = StringProperty('0')
+    score_inc = 1
 
     menu_widget = ObjectProperty()
     right_button = ObjectProperty()
@@ -97,10 +97,7 @@ class MainCanvas(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-
-
         self.player = Sprite(x=-self.ball_size / 2, y=145, size=dp(15), vx=dp(0), vy=dp(0), color=(1, .3, .5))
-
 
         self.balls = [
             Sprite(x=-15, y=-2000, size=dp(15), vx=dp(0), vy=dp(3), color=(1, 0, 0)),  # Red
@@ -139,7 +136,7 @@ class MainCanvas(Widget):
             Sprite(x=220, y=-12000, size=dp(9), vx=dp(0), vy=dp(4), color=(1, .5, .7)),  # Pink
             Sprite(x=-320, y=-12000, size=dp(30), vx=dp(0), vy=dp(6), color=(.5, 0, 1)),  # Dark Purple
             Sprite(x=270, y=-55000, size=dp(15), vx=dp(0), vy=dp(7), color=(.5, .5, .5)),  # Grey
-            ]
+        ]
 
         '''self.balls = [
             Sprite(x=0, y=-2000, size=dp(15), vx=dp(0), vy=dp(8), color=(1, 0, 0)),
@@ -155,13 +152,18 @@ class MainCanvas(Widget):
             self.player.create_rect()
 
         Clock.schedule_interval(self.update, 1 / 60)
+        Clock.schedule_interval(self.scorekeeper, self.score_inc)
 
+    def scorekeeper(self, dt):
+        if not self.state_game_over and self.state_game_has_started:
+            self.score = str(self.count)
+            self.count += 1
 
     def reset_game(self):
         self.state_game_over = False
         self.player.x = 382.5
         self.player.vx = 0
-
+        self.count = 0
 
     def on_size(self, *args):
         print(f'on_size : {self.width}x{self.height}')
@@ -177,45 +179,42 @@ class MainCanvas(Widget):
 
         # x = 382.5 y = 445.0
 
-         # all in one function to control if it check collision after move, and draw only after all calculations
+        # all in one function to control if it check collision after move, and draw only after all calculations
 
-         # --- moves (without draws) ---
+        # --- moves (without draws) ---
 
         self.player_move(dt)
 
-            # move green rectangle below player
+        # move green rectangle below player
         self.rec_x = self.player.x + dp(7.5)
 
         self.ball_move(dt)
 
-            # --- collisions (without draws) ---
+        # --- collisions (without draws) ---
 
         live_balls = []
-
-
-
 
         '''PLAYER BEING HIT'''
 
         for ball in self.balls:
             if self.player.check_collision_rect(ball) and not self.state_game_over:
-                    # if self.player.check_collision_circle(ball):
+                # if self.player.check_collision_circle(ball):
                 print('killed')
 
                 self.state_game_over = True
                 self.menu_widget.opacity = 1
-                    # hide
-                #ball.set_start_pos(self.center_x, self.center_y)
-                #ball.draw()
+                # hide
+                # ball.set_start_pos(self.center_x, self.center_y)
+                # ball.draw()
 
-                    # or remove from canvas
+                # or remove from canvas
                 self.canvas.remove(ball.rect)
             else:
                 live_balls.append(ball)
 
         self.balls = live_balls
 
-            # --- draws ---
+        # --- draws ---
 
         self.player.draw()
 
@@ -242,7 +241,7 @@ class MainCanvas(Widget):
     def player_move(self, dt):
         self.player.move()
 
-            # moving left and stop on screen border
+        # moving left and stop on screen border
         if self.player.vx < 0 and self.player.x < 0:
             self.player.x = 0
             self.player.vx = 0
@@ -263,7 +262,10 @@ class MainCanvas(Widget):
 class TheFalling(App):
     pass
 
+
 app = TheFalling()
 app.run()
-    # app.stop()
+# app.stop()
 app.root_window.close()
+
+
